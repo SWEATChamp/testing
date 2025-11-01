@@ -46,7 +46,7 @@ export function Dashboard() {
                 <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center group-hover:from-blue-200 group-hover:to-cyan-200 transition-all">
                   <School className="text-blue-600" size={48} />
                 </div>
-                <span className="text-xl font-bold text-slate-800">Find Empty Classroom</span>
+                <span className="text-xl font-bold text-slate-800">Smart Classroom Finder</span>
               </div>
             </button>
 
@@ -58,7 +58,7 @@ export function Dashboard() {
                 <div className="w-24 h-24 bg-gradient-to-br from-teal-100 to-green-100 rounded-2xl flex items-center justify-center group-hover:from-teal-200 group-hover:to-green-200 transition-all">
                   <ArrowUpDown className="text-teal-600" size={48} />
                 </div>
-                <span className="text-xl font-bold text-slate-800">Best Lift to Take</span>
+                <span className="text-xl font-bold text-slate-800">Lift Recommender</span>
               </div>
             </button>
 
@@ -67,7 +67,7 @@ export function Dashboard() {
                 <div className="w-24 h-24 bg-gradient-to-br from-orange-100 to-red-100 rounded-2xl flex items-center justify-center group-hover:from-orange-200 group-hover:to-red-200 transition-all">
                   <Car className="text-orange-600" size={48} />
                 </div>
-                <span className="text-xl font-bold text-slate-800">Check Traffic</span>
+                <span className="text-xl font-bold text-slate-800">Traffic Status</span>
               </div>
             </button>
 
@@ -76,7 +76,7 @@ export function Dashboard() {
                 <div className="w-24 h-24 bg-gradient-to-br from-violet-100 to-purple-100 rounded-2xl flex items-center justify-center group-hover:from-violet-200 group-hover:to-purple-200 transition-all">
                   <ParkingSquare className="text-violet-600" size={48} />
                 </div>
-                <span className="text-xl font-bold text-slate-800">Parking Availability</span>
+                <span className="text-xl font-bold text-slate-800">Parking</span>
               </div>
             </button>
 
@@ -85,7 +85,7 @@ export function Dashboard() {
                 <div className="w-24 h-24 bg-gradient-to-br from-amber-100 to-yellow-100 rounded-2xl flex items-center justify-center group-hover:from-amber-200 group-hover:to-yellow-200 transition-all">
                   <BookOpen className="text-amber-600" size={48} />
                 </div>
-                <span className="text-xl font-bold text-slate-800">Library Seats</span>
+                <span className="text-xl font-bold text-slate-800">Canteen Seats</span>
               </div>
             </button>
 
@@ -94,7 +94,7 @@ export function Dashboard() {
                 <div className="w-24 h-24 bg-gradient-to-br from-rose-100 to-pink-100 rounded-2xl flex items-center justify-center group-hover:from-rose-200 group-hover:to-pink-200 transition-all">
                   <Utensils className="text-rose-600" size={48} />
                 </div>
-                <span className="text-xl font-bold text-slate-800">Food Stalls</span>
+                <span className="text-xl font-bold text-slate-800">Adaptive Study Planner</span>
               </div>
             </button>
 
