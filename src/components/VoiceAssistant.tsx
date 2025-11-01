@@ -23,11 +23,21 @@ export function VoiceAssistant({ onCommand }: VoiceAssistantProps) {
     }
   };
 
+  const matchesPattern = (text: string, patterns: string[]): boolean => {
+    return patterns.some(pattern => text.includes(pattern));
+  };
+
   const processCommand = async (text: string) => {
     const lowerText = text.toLowerCase();
     let responseText = '';
 
-    if (lowerText.includes('traffic') || lowerText.includes('home') || lowerText.includes('go')) {
+    const isTrafficQuery = matchesPattern(lowerText, ['traffic', 'jam', 'road', 'drive', 'driving', 'commute', 'go home', 'going home', 'leave']);
+    const isParkingQuery = matchesPattern(lowerText, ['park', 'parking', 'car space', 'parking space', 'where can i park', 'parking lot']);
+    const isLibraryQuery = matchesPattern(lowerText, ['library', 'study', 'seat', 'study spot', 'study space', 'where to study', 'where can i study']);
+    const isFoodQuery = matchesPattern(lowerText, ['food', 'eat', 'hungry', 'lunch', 'dinner', 'breakfast', 'canteen', 'cafe', 'restaurant']);
+    const isLiftQuery = matchesPattern(lowerText, ['lift', 'elevator', 'which lift']);
+
+    if (isTrafficQuery) {
       const { data: poisData } = await supabase
         .from('pois')
         .select('*')
@@ -38,78 +48,65 @@ export function VoiceAssistant({ onCommand }: VoiceAssistantProps) {
         .select('*');
 
       if (poisData && trafficData && poisData.length > 0) {
-        if (lowerText.includes('sunway') || lowerText.includes('pyramid')) {
-          const sunway = poisData.find((p) => p.name.toLowerCase().includes('sunway'));
-          if (sunway) {
-            const traffic = trafficData.find((t) => t.poi_id === sunway.id);
-            const levelText = traffic?.traffic_level === 'severe' ? 'severe congestion' :
-                            traffic?.traffic_level === 'heavy' ? 'heavy traffic' :
-                            traffic?.traffic_level === 'moderate' ? 'moderate traffic' : 'light traffic';
-            responseText = `Sunway Pyramid: ${traffic?.commute_time_minutes || 0} minutes with ${levelText}`;
-          }
-        } else if (lowerText.includes('mid valley') || lowerText.includes('midvalley')) {
-          const midvalley = poisData.find((p) => p.name.toLowerCase().includes('mid valley'));
-          if (midvalley) {
-            const traffic = trafficData.find((t) => t.poi_id === midvalley.id);
-            const levelText = traffic?.traffic_level === 'severe' ? 'severe congestion' :
-                            traffic?.traffic_level === 'heavy' ? 'heavy traffic' :
-                            traffic?.traffic_level === 'moderate' ? 'moderate traffic' : 'light traffic';
-            responseText = `Mid Valley: ${traffic?.commute_time_minutes || 0} minutes with ${levelText}`;
-          }
-        } else if (lowerText.includes('worst') || lowerText.includes('avoid') || lowerText.includes('bad')) {
-          const withTraffic = poisData.map((poi) => {
-            const poiTraffic = trafficData.find((t) => t.poi_id === poi.id);
-            return {
-              name: poi.name,
-              time: poiTraffic?.commute_time_minutes || 0,
-              level: poiTraffic?.traffic_level || 'unknown'
-            };
-          }).sort((a, b) => b.time - a.time);
+        const allTraffic = poisData.map((poi) => {
+          const poiTraffic = trafficData.find((t) => t.poi_id === poi.id);
+          return {
+            name: poi.name,
+            time: poiTraffic?.commute_time_minutes || 0,
+            level: poiTraffic?.traffic_level || 'unknown'
+          };
+        });
 
-          if (withTraffic.length > 0) {
-            const worst = withTraffic[0];
-            const levelText = worst.level === 'severe' ? 'severe congestion' :
-                            worst.level === 'heavy' ? 'heavy traffic' :
-                            worst.level === 'moderate' ? 'moderate traffic' : 'light traffic';
-            responseText = `Avoid ${worst.name}. It has the worst traffic right now with ${worst.time} minutes and ${levelText}`;
-          }
-        } else if (lowerText.includes('best') || lowerText.includes('fastest') || lowerText.includes('quick')) {
-          const withTraffic = poisData.map((poi) => {
-            const poiTraffic = trafficData.find((t) => t.poi_id === poi.id);
-            return {
-              name: poi.name,
-              time: poiTraffic?.commute_time_minutes || 0,
-              level: poiTraffic?.traffic_level || 'unknown'
-            };
-          }).sort((a, b) => a.time - b.time);
+        const isSpecificLocation = matchesPattern(lowerText, ['sunway', 'pyramid', '1 utama', 'one utama', 'utama', 'mid valley', 'midvalley', 'klcc', 'paradigm']);
+        const isWorstQuery = matchesPattern(lowerText, ['worst', 'avoid', 'bad', 'heavy', 'jammed', 'congested', 'bad traffic']);
+        const isBestQuery = matchesPattern(lowerText, ['best', 'fastest', 'quick', 'fast', 'clear', 'light', 'good', 'recommend']);
 
-          if (withTraffic.length > 0) {
-            const best = withTraffic[0];
-            responseText = `${best.name} is your best option with only ${best.time} minutes`;
+        if (isSpecificLocation) {
+          let targetPoi = null;
+          if (matchesPattern(lowerText, ['sunway', 'pyramid'])) {
+            targetPoi = allTraffic.find((t) => t.name.toLowerCase().includes('sunway'));
+          } else if (matchesPattern(lowerText, ['1 utama', 'one utama', 'utama'])) {
+            targetPoi = allTraffic.find((t) => t.name.toLowerCase().includes('utama'));
+          } else if (matchesPattern(lowerText, ['mid valley', 'midvalley'])) {
+            targetPoi = allTraffic.find((t) => t.name.toLowerCase().includes('mid valley'));
+          } else if (matchesPattern(lowerText, ['klcc'])) {
+            targetPoi = allTraffic.find((t) => t.name.toLowerCase().includes('klcc'));
+          } else if (matchesPattern(lowerText, ['paradigm'])) {
+            targetPoi = allTraffic.find((t) => t.name.toLowerCase().includes('paradigm'));
           }
+
+          if (targetPoi) {
+            const levelText = targetPoi.level === 'severe' ? 'severe congestion' :
+                            targetPoi.level === 'heavy' ? 'heavy traffic' :
+                            targetPoi.level === 'moderate' ? 'moderate traffic' : 'light traffic';
+            responseText = `${targetPoi.name} is ${targetPoi.time} minutes away with ${levelText}`;
+          }
+        } else if (isWorstQuery) {
+          const sorted = [...allTraffic].sort((a, b) => b.time - a.time);
+          const worst = sorted[0];
+          const levelText = worst.level === 'severe' ? 'severe congestion' :
+                          worst.level === 'heavy' ? 'heavy traffic' :
+                          worst.level === 'moderate' ? 'moderate traffic' : 'light traffic';
+          responseText = `Avoid ${worst.name}. It has the worst traffic at ${worst.time} minutes with ${levelText}`;
+        } else if (isBestQuery) {
+          const sorted = [...allTraffic].sort((a, b) => a.time - b.time);
+          const best = sorted[0];
+          const levelText = best.level === 'low' ? 'light traffic' : best.level;
+          responseText = `${best.name} is your best option with only ${best.time} minutes and ${levelText}`;
         } else {
-          const traffic = poisData.slice(0, 3).map((poi) => {
-            const poiTraffic = trafficData.find((t) => t.poi_id === poi.id);
-            return {
-              name: poi.name,
-              time: poiTraffic?.commute_time_minutes || 0,
-              level: poiTraffic?.traffic_level || 'unknown'
-            };
-          });
-
-          const trafficInfo = traffic.map((t) => {
-            const levelText = t.level === 'severe' ? 'severe congestion' :
-                            t.level === 'heavy' ? 'heavy traffic' :
-                            t.level === 'moderate' ? 'moderate traffic' : 'light traffic';
-            return `${t.name}: ${t.time} minutes with ${levelText}`;
+          const top3 = allTraffic.slice(0, 3);
+          const trafficInfo = top3.map((t) => {
+            const levelText = t.level === 'severe' ? 'severe' :
+                            t.level === 'heavy' ? 'heavy' :
+                            t.level === 'moderate' ? 'moderate' : 'light';
+            return `${t.name}: ${t.time} minutes, ${levelText}`;
           }).join('. ');
-
-          responseText = `Current traffic conditions: ${trafficInfo}`;
+          responseText = `Current traffic: ${trafficInfo}`;
         }
       } else {
-        responseText = 'Unable to fetch traffic data at the moment';
+        responseText = 'Unable to fetch traffic data right now';
       }
-    } else if (lowerText.includes('parking')) {
+    } else if (isParkingQuery) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         responseText = 'Please sign in to check parking availability';
@@ -128,24 +125,29 @@ export function VoiceAssistant({ onCommand }: VoiceAssistantProps) {
             .order('available_spaces', { ascending: false });
 
           if (data && data.length > 0) {
-            if (lowerText.includes('most') || lowerText.includes('best') || lowerText.includes('recommend')) {
+            const isRecommendQuery = matchesPattern(lowerText, ['recommend', 'best', 'should i', 'where should', 'where can i']);
+            const isWorstQuery = matchesPattern(lowerText, ['worst', 'full', 'avoid', 'crowded']);
+
+            if (isRecommendQuery) {
               const best = data[0];
-              responseText = `I recommend ${best.zone}. It has ${best.available_spaces} out of ${best.total_spaces} spaces available`;
-            } else if (lowerText.includes('full') || lowerText.includes('avoid')) {
+              const percentage = Math.round((best.available_spaces / best.total_spaces) * 100);
+              responseText = `I recommend ${best.zone}. It has ${best.available_spaces} out of ${best.total_spaces} spaces available, that's ${percentage} percent`;
+            } else if (isWorstQuery) {
               const worst = data[data.length - 1];
-              responseText = `Avoid ${worst.zone}. It only has ${worst.available_spaces} spaces left`;
+              responseText = `Avoid ${worst.zone}. It only has ${worst.available_spaces} spaces left out of ${worst.total_spaces}`;
             } else {
-              const parkingInfo = data.slice(0, 3).map((p) =>
-                `${p.zone}: ${p.available_spaces} out of ${p.total_spaces} available`
+              const top3 = data.slice(0, 3);
+              const parkingInfo = top3.map((p) =>
+                `${p.zone}: ${p.available_spaces} available`
               ).join('. ');
-              responseText = `Parking availability: ${parkingInfo}`;
+              responseText = `Parking: ${parkingInfo}`;
             }
           } else {
             responseText = 'No parking data available';
           }
         }
       }
-    } else if (lowerText.includes('library') || lowerText.includes('study')) {
+    } else if (isLibraryQuery) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         responseText = 'Please sign in to check library seats';
@@ -164,42 +166,48 @@ export function VoiceAssistant({ onCommand }: VoiceAssistantProps) {
             .order('available_seats', { ascending: false });
 
           if (data && data.length > 0) {
-            if (lowerText.includes('recommend') || lowerText.includes('best') || lowerText.includes('where should')) {
-              const best = data[0];
-              const charging = best.has_charging_port ? ' with charging ports' : '';
-              responseText = `I recommend Floor ${best.floor}, ${best.zone}. It has ${best.available_seats} seats available${charging}`;
-            } else if (lowerText.includes('charging') || lowerText.includes('power') || lowerText.includes('plug')) {
+            const isRecommendQuery = matchesPattern(lowerText, ['recommend', 'best', 'should i', 'where should', 'where can i']);
+            const isChargingQuery = matchesPattern(lowerText, ['charging', 'charge', 'power', 'plug', 'charger', 'socket']);
+            const isQuietQuery = matchesPattern(lowerText, ['quiet', 'silent', 'peaceful']);
+
+            if (isChargingQuery) {
               const withCharging = data.filter((s) => s.has_charging_port);
               if (withCharging.length > 0) {
                 const best = withCharging[0];
-                responseText = `For charging, go to Floor ${best.floor}, ${best.zone}. It has ${best.available_seats} seats with charging ports`;
+                responseText = `For charging, go to Floor ${best.floor}, ${best.zone}. It has ${best.available_seats} seats with power outlets`;
               } else {
-                responseText = 'No seats with charging ports are currently available';
+                responseText = 'Sorry, no seats with charging ports are available right now';
               }
-            } else if (lowerText.includes('quiet') || lowerText.includes('silent')) {
+            } else if (isQuietQuery) {
               const silent = data.find((s) => s.zone.toLowerCase().includes('silent') || s.zone.toLowerCase().includes('quiet'));
               if (silent) {
-                const charging = silent.has_charging_port ? ' with charging ports' : '';
+                const charging = silent.has_charging_port ? ' with charging' : '';
                 responseText = `The quiet area is on Floor ${silent.floor}, ${silent.zone}. ${silent.available_seats} seats available${charging}`;
               } else {
-                responseText = 'No specific quiet zones found, but I recommend the area with most available seats';
+                const best = data[0];
+                responseText = `No specific quiet zone found. I recommend Floor ${best.floor}, ${best.zone} with ${best.available_seats} seats`;
               }
+            } else if (isRecommendQuery) {
+              const best = data[0];
+              const charging = best.has_charging_port ? ' with charging ports' : '';
+              responseText = `I recommend Floor ${best.floor}, ${best.zone}. It has ${best.available_seats} seats available${charging}`;
             } else {
-              const libraryInfo = data.slice(0, 3).map((s) => {
+              const top3 = data.slice(0, 3);
+              const libraryInfo = top3.map((s) => {
                 const charging = s.has_charging_port ? ' with charging' : '';
                 return `Floor ${s.floor} ${s.zone}: ${s.available_seats} seats${charging}`;
               }).join('. ');
-              responseText = `Library availability: ${libraryInfo}`;
+              responseText = `Library: ${libraryInfo}`;
             }
           } else {
-            responseText = 'No library seat data available';
+            responseText = 'No library seats available';
           }
         }
       }
-    } else if (lowerText.includes('food') || lowerText.includes('eat') || lowerText.includes('canteen')) {
+    } else if (isFoodQuery) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        responseText = 'Please sign in to check food stall availability';
+        responseText = 'Please sign in to check food options';
       } else {
         const { data: profile } = await supabase
           .from('user_profiles')
@@ -215,24 +223,29 @@ export function VoiceAssistant({ onCommand }: VoiceAssistantProps) {
             .order('queue_length', { ascending: true });
 
           if (data && data.length > 0) {
-            if (lowerText.includes('recommend') || lowerText.includes('best') || lowerText.includes('fastest') || lowerText.includes('quick')) {
+            const isRecommendQuery = matchesPattern(lowerText, ['recommend', 'best', 'should', 'where should', 'where can i']);
+            const isWorstQuery = matchesPattern(lowerText, ['avoid', 'busy', 'crowded', 'worst', 'long queue']);
+            const isFastQuery = matchesPattern(lowerText, ['quick', 'fast', 'fastest', 'short queue']);
+
+            if (isRecommendQuery || isFastQuery) {
               const best = data[0];
-              responseText = `I recommend ${best.name}. It has ${best.available_seats} seats and only ${best.queue_length} people in queue`;
-            } else if (lowerText.includes('avoid') || lowerText.includes('busy') || lowerText.includes('crowded')) {
+              responseText = `I recommend ${best.name}. It has ${best.available_seats} seats and only ${best.queue_length} people in the queue`;
+            } else if (isWorstQuery) {
               const worst = data[data.length - 1];
-              responseText = `Avoid ${worst.name}. It has a queue of ${worst.queue_length} people`;
+              responseText = `Avoid ${worst.name}. It has a long queue of ${worst.queue_length} people`;
             } else {
-              const foodInfo = data.slice(0, 3).map((f) =>
+              const top3 = data.slice(0, 3);
+              const foodInfo = top3.map((f) =>
                 `${f.name}: ${f.available_seats} seats, queue of ${f.queue_length}`
               ).join('. ');
-              responseText = `Food stalls: ${foodInfo}`;
+              responseText = `Food options: ${foodInfo}`;
             }
           } else {
             responseText = 'No food stall data available';
           }
         }
       }
-    } else if (lowerText.includes('lift') || lowerText.includes('elevator')) {
+    } else if (isLiftQuery) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         responseText = 'Please sign in to check lift status';
@@ -251,28 +264,31 @@ export function VoiceAssistant({ onCommand }: VoiceAssistantProps) {
             .order('queue_length', { ascending: true });
 
           if (data && data.length > 0) {
-            if (lowerText.includes('recommend') || lowerText.includes('best') || lowerText.includes('fastest')) {
+            const isRecommendQuery = matchesPattern(lowerText, ['recommend', 'best', 'should', 'fastest', 'which']);
+
+            if (isRecommendQuery) {
               const best = data[0];
-              responseText = `Use ${best.lift_name}. It has only ${best.queue_length} people waiting`;
+              responseText = `Take ${best.lift_name}. It has only ${best.queue_length} people waiting`;
             } else {
-              const liftInfo = data.slice(0, 3).map((l) =>
-                `${l.lift_name}: ${l.queue_length} people waiting`
+              const top3 = data.slice(0, 3);
+              const liftInfo = top3.map((l) =>
+                `${l.lift_name}: ${l.queue_length} waiting`
               ).join('. ');
-              responseText = `Lift queues: ${liftInfo}`;
+              responseText = `Lifts: ${liftInfo}`;
             }
           } else {
             responseText = 'No lift queue data available';
           }
         }
       }
-    } else if (lowerText.includes('classroom') || lowerText.includes('empty room')) {
+    } else if (matchesPattern(lowerText, ['classroom', 'empty room', 'free room', 'available room'])) {
       responseText = 'Let me show you available classrooms';
       onCommand('classroom');
-    } else if (lowerText.includes('course') || lowerText.includes('plan')) {
+    } else if (matchesPattern(lowerText, ['course', 'plan', 'schedule', 'timetable', 'units'])) {
       responseText = 'Opening your course planner';
       onCommand('course');
     } else {
-      responseText = 'I can help you check traffic, parking, library seats, food stalls, lifts, classrooms, and course planning. Try asking for recommendations!';
+      responseText = 'I can help you with traffic, parking, library seats, food options, lifts, classrooms, and course planning. Just ask me a question!';
     }
 
     setResponse(responseText);
