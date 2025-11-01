@@ -86,12 +86,15 @@ export function LiftTrackerPage() {
   };
 
   const calculateLiftScore = (lift: Lift, targetFloor: number, targetBuilding: string, currentFloor: number) => {
-    if (lift.building !== targetBuilding) {
-      return { score: 0, reasoning: 'Different building' };
-    }
-
     let score = 100;
     let reasoning = [];
+
+    if (lift.building !== targetBuilding) {
+      score -= 20;
+      reasoning.push('Different building');
+    } else {
+      reasoning.push('Same building');
+    }
 
     const floorDistance = Math.abs(lift.current_floor - currentFloor);
     score -= floorDistance * 5;
@@ -141,14 +144,13 @@ export function LiftTrackerPage() {
   };
 
   const updateRecommendations = (room: Classroom, floor: number) => {
-    const liftsInBuilding = lifts.filter((lift) => lift.building === room.building);
-    const scoredLifts = liftsInBuilding.map((lift) => {
+    const scoredLifts = lifts.map((lift) => {
       const { score, reasoning } = calculateLiftScore(lift, room.floor, room.building, floor);
       return { ...lift, score, reasoning };
     });
 
     scoredLifts.sort((a, b) => b.score - a.score);
-    setRecommendedLifts(scoredLifts);
+    setRecommendedLifts(scoredLifts.slice(0, 6));
   };
 
   const handleSelectDestination = (room: Classroom) => {
