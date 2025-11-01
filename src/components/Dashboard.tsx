@@ -85,7 +85,7 @@ export function Dashboard() {
                 <div className="w-24 h-24 bg-gradient-to-br from-amber-100 to-yellow-100 rounded-2xl flex items-center justify-center group-hover:from-amber-200 group-hover:to-yellow-200 transition-all">
                   <BookOpen className="text-amber-600" size={48} />
                 </div>
-                <span className="text-xl font-bold text-slate-800">Canteen Seats</span>
+                <span className="text-xl font-bold text-slate-800">Library Seats</span>
               </div>
             </button>
 
@@ -94,7 +94,7 @@ export function Dashboard() {
                 <div className="w-24 h-24 bg-gradient-to-br from-rose-100 to-pink-100 rounded-2xl flex items-center justify-center group-hover:from-rose-200 group-hover:to-pink-200 transition-all">
                   <Utensils className="text-rose-600" size={48} />
                 </div>
-                <span className="text-xl font-bold text-slate-800">Adaptive Study Planner</span>
+                <span className="text-xl font-bold text-slate-800">Canteen Seats</span>
               </div>
             </button>
 
@@ -106,7 +106,7 @@ export function Dashboard() {
                 <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-blue-100 rounded-2xl flex items-center justify-center group-hover:from-indigo-200 group-hover:to-blue-200 transition-all">
                   <CalendarDays className="text-indigo-600" size={48} />
                 </div>
-                <span className="text-xl font-bold text-slate-800">Unit Arrangement</span>
+                <span className="text-xl font-bold text-slate-800">Adaptive Study Planner</span>
               </div>
             </button>
           </div>
