@@ -87,15 +87,9 @@ export interface CourseModule {
   prerequisites: string[];
   description: string;
   university_id: string;
-}
-
-export interface CourseStructure {
-  id: string;
-  degree_program_id: string;
-  course_id: string;
+  degree_program_id: string | null;
   parent_course_id: string | null;
   is_core: boolean;
-  recommended_year: number;
-  recommended_semester: number;
-  created_at: string;
+  recommended_year: number | null;
+  recommended_semester: number | null;
 }

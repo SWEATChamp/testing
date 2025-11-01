@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { ArrowLeft, Send, Sparkles, Calendar, BookOpen, Globe } from 'lucide-react';
-import { Course, CourseModule, CourseStructure } from '../types';
+import { Course, CourseModule } from '../types';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -15,10 +15,6 @@ interface UserData {
   intake: string;
   electives: string[];
   overseas: boolean;
-}
-
-interface ModuleWithStructure extends CourseModule {
-  structure: CourseStructure;
 }
 
 export function UnitArrangementPage() {
@@ -41,7 +37,7 @@ export function UnitArrangementPage() {
   });
   const [courseMap, setCourseMap] = useState<any>(null);
   const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
-  const [availableModules, setAvailableModules] = useState<ModuleWithStructure[]>([]);
+  const [availableModules, setAvailableModules] = useState<CourseModule[]>([]);
   const [userUniversityId, setUserUniversityId] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -101,37 +97,21 @@ export function UnitArrangementPage() {
   };
 
   const loadCourseModules = async (courseId: string) => {
-    const { data: structures } = await supabase
-      .from('course_structure')
-      .select(`
-        *,
-        course_module:course_id (*)
-      `)
+    const { data: modules } = await supabase
+      .from('course_module')
+      .select('*')
       .eq('degree_program_id', courseId)
       .order('recommended_year')
       .order('recommended_semester');
 
-    if (structures) {
-      const modules: ModuleWithStructure[] = structures.map((s: any) => ({
-        ...s.course_module,
-        structure: {
-          id: s.id,
-          degree_program_id: s.degree_program_id,
-          course_id: s.course_id,
-          parent_course_id: s.parent_course_id,
-          is_core: s.is_core,
-          recommended_year: s.recommended_year,
-          recommended_semester: s.recommended_semester,
-          created_at: s.created_at,
-        },
-      }));
+    if (modules) {
       setAvailableModules(modules);
     }
   };
 
-  const generateCourseMap = (data: UserData, modules: ModuleWithStructure[]) => {
+  const generateCourseMap = (data: UserData, modules: CourseModule[]) => {
     const semesters: any[] = [];
-    const years = Math.max(...modules.map((m) => m.structure.recommended_year));
+    const years = Math.max(...modules.map((m) => m.recommended_year || 1));
 
     for (let year = 1; year <= years; year++) {
       for (let sem = 1; sem <= 2; sem++) {
@@ -149,8 +129,8 @@ export function UnitArrangementPage() {
 
         const semesterModules = modules.filter(
           (m) =>
-            m.structure.recommended_year === year &&
-            m.structure.recommended_semester === sem
+            m.recommended_year === year &&
+            m.recommended_semester === sem
         );
 
         if (semesterModules.length > 0) {
@@ -162,7 +142,7 @@ export function UnitArrangementPage() {
               code: m.code,
               name: m.name,
               credits: m.credits,
-              type: m.structure.is_core ? 'Core' : 'Elective',
+              type: m.is_core ? 'Core' : 'Elective',
             })),
           });
         }
@@ -212,7 +192,7 @@ export function UnitArrangementPage() {
       } else if (step === 2) {
         setUserData((prev) => ({ ...prev, intake: userMessage }));
 
-        const electives = availableModules.filter((m) => !m.structure.is_core);
+        const electives = availableModules.filter((m) => !m.is_core);
         if (electives.length > 0) {
           const electiveList = electives.map((e) => `${e.code} - ${e.name}`).join(', ');
           assistantResponse = `Perfect! Starting in ${userMessage}. Would you like to choose any specific electives? Available electives: ${electiveList}. (You can type "Skip" if you want to use recommended electives)`;
