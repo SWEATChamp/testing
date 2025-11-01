@@ -44,4 +44,55 @@ Our goal is to make campus life **smarter, simpler, and more efficient** through
 ---
 
 ## 🧱 System Architecture
+- The **backend API** collects live campus data (e.g., sensors, schedules).  
+- **AI modules** handle predictions (availability, congestion, or personalized learning).  
+- **Voice AI** acts as an interface between the user and the data.
+
+---
+
+## 🎨 UI/UX Prototype
+- Designed in **Figma** for intuitive navigation and minimal learning curve.
+- Emphasizes **youthful colors**, **soft contrast**, and **clean typography**.
+- Focus areas:
+  - Quick access dashboard (real-time data)
+  - Interactive campus map
+  - Chat-style voice assistant interface
+
+---
+
+## 🌟 Example Use Cases
+- "Hey Auri, where’s the nearest available study room?"
+- "Show me which lifts are not crowded right now."
+- "Plan my study schedule for CS101 this semester."
+- "How long does it take to walk to the cafeteria from Block D?"
+
+---
+
+## 🧑‍💻 Contributors
+| Name | Role | Responsibilities |
+|------|------|------------------|
+| [Lee Ping Xian] | Project Lead / Developer | Backend, AI Integration |
+| [Leong Wui Yip] | UI/UX Designer | Prototype Design |
+
+---
+
+## 🔮 Future Enhancements
+- Integrate **predictive congestion models** using historical traffic data.  
+- Add **cross-campus shuttle tracking** and **real-time notifications**.  
+- Deploy **multi-language voice assistant** for international students.  
+- Connect to university's **official timetable and facility systems**.
+
+---
+
+## ⚙️ Installation (for Developers)
+```bash
+# Clone the repository
+git clone https://github.com/SWEATChamp/Auri-SmartU.git
+cd Auri-SmartU
+
+# Install dependencies
+npm install  # or pip install -r requirements.txt
+
+# Run development server
+npm run dev  # or python app.py
 
