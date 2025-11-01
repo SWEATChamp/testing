@@ -207,13 +207,18 @@ export function VoiceAssistant({ onCommand }: VoiceAssistantProps) {
     if (!data || data.length === 0)
       return 'No food data available right now.';
 
-    if (matchesPattern(text, ['recommend', 'best', 'quick'])) {
+    if (matchesPattern(text, ['recommend', 'best', 'quick', 'fast', 'should i go'])) {
       const best = data[0];
       return `${best.name} looks good — ${best.available_seats} seats and a short queue of ${best.queue_length}.`;
     }
 
-    const worst = data[data.length - 1];
-    return `Avoid ${worst.name}, it’s crowded with ${worst.queue_length} people in line.`;
+    if (matchesPattern(text, ['avoid', 'busy', 'crowded', 'worst', 'packed'])) {
+      const worst = data[data.length - 1];
+      return `Avoid ${worst.name}, it's crowded with ${worst.queue_length} people in line.`;
+    }
+
+    const top2 = data.slice(0, 2);
+    return `For food, try ${top2.map(f => `${f.name} with ${f.queue_length} in queue`).join(', or ')}.`;
   };
 
   // === LIFT ===
@@ -247,29 +252,61 @@ export function VoiceAssistant({ onCommand }: VoiceAssistantProps) {
     let responseText = '';
 
     try {
-      if (matchesPattern(lowerText, ['hi', 'hello', 'hey'])) {
-        responseText = "Hey there 👋! What can I help you with?";
-      } else if (matchesPattern(lowerText, ['how are you'])) {
+      if (matchesPattern(lowerText, ['hi', 'hello', 'hey', 'good morning', 'good afternoon'])) {
+        responseText = "Hey there! What can I help you with?";
+      } else if (matchesPattern(lowerText, ['how are you', 'how r u', 'whats up', "what's up"])) {
         responseText = "Doing great — just keeping an eye on campus for you!";
-      } else if (matchesPattern(lowerText, ['thank', 'thanks'])) {
+      } else if (matchesPattern(lowerText, ['thank', 'thanks', 'appreciate'])) {
         responseText = "You're welcome! Always happy to help.";
-      } else if (matchesPattern(lowerText, ['traffic', 'jam', 'commute', 'drive', 'go home'])) {
+      }
+
+      else if (matchesPattern(lowerText, ['traffic', 'jam', 'commute', 'drive', 'go home', 'going home', 'leave', 'how long', 'get to', 'travel time'])) {
         responseText = await handleTrafficQuery(lowerText);
-      } else if (matchesPattern(lowerText, ['parking', 'car park', 'space'])) {
+      }
+
+      else if (matchesPattern(lowerText, ['park', 'parking', 'car park', 'space', 'where to park', 'where can i park', 'parking spot', 'car space'])) {
         responseText = await handleParkingQuery(lowerText);
-      } else if (matchesPattern(lowerText, ['library', 'study', 'seat'])) {
+      }
+
+      else if (matchesPattern(lowerText, ['library', 'study', 'seat', 'read', 'quiet place', 'study spot', 'where can i study', 'need a seat', 'find a seat'])) {
         responseText = await handleLibraryQuery(lowerText);
-      } else if (matchesPattern(lowerText, ['food', 'eat', 'canteen', 'hungry'])) {
+      }
+
+      else if (matchesPattern(lowerText, ['food', 'eat', 'canteen', 'hungry', 'lunch', 'dinner', 'breakfast', 'meal', 'where to eat', 'grab food', 'get food'])) {
         responseText = await handleFoodQuery(lowerText);
-      } else if (matchesPattern(lowerText, ['lift', 'elevator'])) {
+      }
+
+      else if (matchesPattern(lowerText, ['lift', 'elevator', 'which lift', 'what lift', 'lift queue', 'waiting', 'go up', 'go down'])) {
         responseText = await handleLiftQuery(lowerText);
-      } else if (matchesPattern(lowerText, ['classroom', 'empty room'])) {
+      }
+
+      else if (matchesPattern(lowerText, ['classroom', 'empty room', 'free room', 'available room', 'where can i', 'find a room', 'room available'])) {
         responseText = 'Sure! Let me show you available classrooms.';
         onCommand('classroom');
-      } else if (matchesPattern(lowerText, ['course', 'plan', 'schedule'])) {
+      }
+
+      else if (matchesPattern(lowerText, ['course', 'plan', 'schedule', 'timetable', 'class', 'module', 'subject', 'my courses'])) {
         responseText = 'Opening your course planner now.';
         onCommand('course');
-      } else {
+      }
+
+      else if (matchesPattern(lowerText, ['what can you do', 'help me', 'what do you do', 'features', 'how can you help', 'assist'])) {
+        responseText = "I can help you with traffic updates, parking availability, library seats, food options, lift queues, classroom availability, and your course schedule. Just ask me anything!";
+      }
+
+      else if (matchesPattern(lowerText, ['busy', 'crowded', 'packed', 'full'])) {
+        if (matchesPattern(lowerText, ['library', 'study'])) {
+          responseText = await handleLibraryQuery(lowerText);
+        } else if (matchesPattern(lowerText, ['canteen', 'food', 'cafeteria'])) {
+          responseText = await handleFoodQuery(lowerText);
+        } else if (matchesPattern(lowerText, ['park', 'parking'])) {
+          responseText = await handleParkingQuery(lowerText);
+        } else {
+          responseText = "What area are you asking about? Library, parking, or food?";
+        }
+      }
+
+      else {
         const openai = getOpenAIClient();
         if (openai) {
           const aiResponse = await openai.chat.completions.create({

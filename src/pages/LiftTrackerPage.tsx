@@ -58,9 +58,26 @@ export function LiftTrackerPage() {
   }, [currentFloor, lifts]);
 
   const fetchData = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('university_id')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!profile?.university_id) {
+      setLoading(false);
+      return;
+    }
+
     const [liftsData, classroomsData] = await Promise.all([
-      supabase.from('lifts').select('*').order('building', { ascending: true }),
-      supabase.from('classrooms').select('building, floor, room_number').order('building', { ascending: true }),
+      supabase.from('lifts').select('*').eq('university_id', profile.university_id).order('building', { ascending: true }),
+      supabase.from('classrooms').select('building, floor, room_number').eq('university_id', profile.university_id).order('building', { ascending: true }),
     ]);
 
     if (liftsData.data) setLifts(liftsData.data);
