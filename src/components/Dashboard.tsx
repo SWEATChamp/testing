@@ -1,14 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { LogOut, School, ArrowUpDown, Car, ParkingSquare, BookOpen, Utensils } from 'lucide-react';
+import { UserCircle2, School, ArrowUpDown, Car, ParkingSquare, BookOpen, Utensils } from 'lucide-react';
 import { VoiceAssistant } from './VoiceAssistant';
 
 export function Dashboard() {
   const navigate = useNavigate();
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -23,11 +19,11 @@ export function Dashboard() {
 
             <div className="flex items-center space-x-4">
               <button
-                onClick={handleSignOut}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-all flex items-center space-x-2"
+                onClick={() => navigate('/account')}
+                className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white hover:from-blue-600 hover:to-cyan-600 transition-all shadow-md hover:shadow-lg"
+                title="My Account"
               >
-                <LogOut size={18} />
-                <span>Sign Out</span>
+                <UserCircle2 size={24} />
               </button>
             </div>
           </div>

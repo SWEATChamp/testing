@@ -4,6 +4,7 @@ import { supabase } from './lib/supabase';
 import { AuthPage } from './components/AuthPage';
 import { Dashboard } from './components/Dashboard';
 import { ClassroomPage } from './pages/ClassroomPage';
+import { AccountPage } from './pages/AccountPage';
 
 function App() {
   const [session, setSession] = useState<any>(null);
@@ -41,6 +42,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/classrooms" element={<ClassroomPage />} />
+        <Route path="/account" element={<AccountPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
