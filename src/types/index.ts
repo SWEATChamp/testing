@@ -67,7 +67,7 @@ export interface POITraffic {
   poi?: POI;
 }
 
-export interface Course {
+export interface CourseModule {
   id: string;
   code: string;
   name: string;
@@ -75,4 +75,15 @@ export interface Course {
   semester_offered: number[];
   prerequisites: string[];
   description: string;
+  university_id: string;
+}
+
+export interface CourseStructure {
+  id: string;
+  course_id: string;
+  parent_course_id: string | null;
+  is_core: boolean;
+  recommended_year: number;
+  recommended_semester: number;
+  created_at: string;
 }
