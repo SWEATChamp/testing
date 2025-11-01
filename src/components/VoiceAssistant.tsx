@@ -229,16 +229,17 @@ export function VoiceAssistant({ onCommand }: VoiceAssistantProps) {
     if (!profile) return 'Unable to find your profile info.';
 
     const { data } = await supabase
-      .from('lift_queues')
+      .from('lifts')
       .select('*')
       .eq('university_id', profile.university_id)
-      .order('queue_length', { ascending: true });
+      .order('queue_count', { ascending: true });
 
     if (!data || data.length === 0)
       return 'No lift data available right now.';
 
     const best = data[0];
-    return `Go for ${best.lift_name}. Only ${best.queue_length} people waiting.`;
+    const liftName = `${best.building} Lift ${best.lift_id}`;
+    return `Go for ${liftName}. Only ${best.queue_count} people waiting.`;
   };
 
   const processCommand = async (text: string) => {
