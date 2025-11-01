@@ -68,8 +68,8 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
         await supabase.from('user_profiles').upsert({
           id: newUser!.id,
           name: 'Admin User',
-          university: 'Taylor University',
-          university_id: (await supabase.from('universities').select('id').eq('code', 'TAYLOR').single()).data?.id,
+          university: 'Demo University (All Access)',
+          university_id: (await supabase.from('universities').select('id').eq('code', 'DEMO').single()).data?.id,
           email: 'admin@campus.demo',
           phone_number: '+60123456789',
         });
@@ -84,8 +84,8 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
           await supabase.from('user_profiles').insert({
             id: user!.id,
             name: 'Admin User',
-            university: 'Taylor University',
-            university_id: (await supabase.from('universities').select('id').eq('code', 'TAYLOR').single()).data?.id,
+            university: 'Demo University (All Access)',
+            university_id: (await supabase.from('universities').select('id').eq('code', 'DEMO').single()).data?.id,
             email: 'admin@campus.demo',
             phone_number: '+60123456789',
           });
