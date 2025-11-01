@@ -86,15 +86,17 @@ export function UnitArrangementPage() {
     if (courses && courses.length > 0) {
       setAvailableCourses(courses);
 
-      const courseOptions = courses.map((c, i) => `${i + 1}. ${c.name}`).join('\n');
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: `Here are the available programs at your university:\n\n${courseOptions}\n\nPlease enter the number or name of your chosen program.`,
-        },
-      ]);
-      setStep(1);
+      if (messages.length === 1) {
+        const courseOptions = courses.map((c, i) => `${i + 1}. ${c.name}`).join('\n');
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: `Here are the available programs at your university:\n\n${courseOptions}\n\nPlease enter the number or name of your chosen program.`,
+          },
+        ]);
+        setStep(1);
+      }
     }
   };
 
