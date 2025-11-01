@@ -4,6 +4,12 @@ import { UserCircle2, School, ArrowUpDown, Car, ParkingSquare, BookOpen, Utensil
 import { VoiceAssistant } from './VoiceAssistant';
 import { useState, useEffect } from 'react';
 import taylorsLogo from '../assets/unnamed.png';
+import monashLogo from '../assets/monash-logo-v2.png';
+
+const universityLogos: Record<string, string> = {
+  'TAYLORS': taylorsLogo,
+  'MONASH': monashLogo,
+};
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -36,15 +42,15 @@ export function Dashboard() {
     }
   };
 
-  const isTaylors = universityCode === 'TAYLORS';
+  const universityLogo = universityCode ? universityLogos[universityCode] : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 relative overflow-hidden">
-      {isTaylors && (
+      {universityLogo && (
         <div
           className="absolute inset-0 opacity-5 pointer-events-none"
           style={{
-            backgroundImage: `url(${taylorsLogo})`,
+            backgroundImage: `url(${universityLogo})`,
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
             backgroundSize: '50%',
