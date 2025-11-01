@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { ArrowLeft, BookOpen, CheckCircle, AlertCircle, Layers } from 'lucide-react';
+import { ArrowLeft, BookOpen, CheckCircle, AlertCircle, Layers, Zap } from 'lucide-react';
 
 interface LibrarySeat {
   id: string;
@@ -9,6 +9,7 @@ interface LibrarySeat {
   zone: string;
   total_seats: number;
   available_seats: number;
+  has_charging_port: boolean;
   last_updated: string;
   university_id: string;
 }
@@ -158,6 +159,13 @@ export function LibrarySeatsPage() {
                   </div>
                 </div>
 
+                {recommendedZone.has_charging_port && (
+                  <div className="mb-4 p-3 bg-white/50 rounded-xl flex items-center space-x-2">
+                    <Zap className="text-amber-600" size={20} />
+                    <span className="font-semibold">Charging ports available</span>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between p-4 bg-white/50 rounded-xl">
                   <span className="font-semibold">Occupancy Rate</span>
                   <div className="flex items-center space-x-3">
@@ -220,6 +228,13 @@ export function LibrarySeatsPage() {
                             <span className="font-medium opacity-75">Total Seats</span>
                             <span className="font-bold">{zone.total_seats}</span>
                           </div>
+
+                          {zone.has_charging_port && (
+                            <div className="flex items-center space-x-2 text-sm pt-2">
+                              <Zap className="text-amber-600" size={16} />
+                              <span className="font-medium">Charging available</span>
+                            </div>
+                          )}
 
                           <div className="pt-3 border-t border-current/20">
                             <div className="flex justify-between items-center mb-2">

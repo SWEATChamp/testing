@@ -130,65 +130,47 @@ export function TrafficStatusPage() {
       </div>
 
       <div className="max-w-7xl mx-auto p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {pois.map((poi) => {
-            const badge = poi.traffic ? getTrafficBadge(poi.traffic.traffic_level) : { text: 'No Data', color: 'bg-slate-500' };
-            return (
-              <div
-                key={poi.id}
-                className={`rounded-2xl border-2 p-6 transition-all hover:shadow-xl ${
-                  poi.traffic ? getTrafficColor(poi.traffic.traffic_level) : 'bg-white border-slate-200'
-                }`}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-white/80 rounded-xl flex items-center justify-center">
-                      <MapPin className="text-blue-600" size={24} />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold">{poi.name}</h3>
-                      {poi.is_default && (
-                        <span className="inline-block mt-1 px-2 py-0.5 bg-blue-500 text-white text-xs font-semibold rounded-full">
-                          Popular
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  {poi.traffic && getTrafficIcon(poi.traffic.traffic_level)}
-                </div>
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6">
+          <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center space-x-2">
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+            <span>Live Traffic Updates</span>
+          </h2>
 
-                <p className="text-sm mb-4 opacity-80">{poi.address}</p>
-
-                {poi.traffic ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-white/50 rounded-lg">
-                      <div className="flex items-center space-x-2">
-                        <Clock size={18} />
-                        <span className="font-semibold">ETA</span>
+          <div className="space-y-3">
+            {pois.map((poi) => {
+              const badge = poi.traffic ? getTrafficBadge(poi.traffic.traffic_level) : { text: 'No Data', color: 'bg-slate-500' };
+              return (
+                <div
+                  key={poi.id}
+                  className={`rounded-xl border-2 p-4 transition-all hover:shadow-lg ${
+                    poi.traffic ? getTrafficColor(poi.traffic.traffic_level) : 'bg-white border-slate-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 bg-white/80 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <MapPin className="text-blue-600" size={20} />
                       </div>
-                      <span className="text-2xl font-bold">{poi.traffic.commute_time_minutes} min</span>
+                      <div className="flex items-center space-x-3">
+                        <h3 className="text-xl font-bold">{poi.name}:</h3>
+                        {poi.traffic ? (
+                          <>
+                            <span className="text-lg font-bold">{poi.traffic.commute_time_minutes} min</span>
+                            <span className={`px-3 py-1 rounded-full text-sm font-bold ${badge.color} text-white`}>
+                              {badge.text}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-slate-500">No data available</span>
+                        )}
+                      </div>
                     </div>
-
-                    <div className="flex items-center justify-between p-3 bg-white/50 rounded-lg">
-                      <span className="font-semibold">Traffic Status</span>
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${badge.color} text-white`}>
-                        {badge.text}
-                      </span>
-                    </div>
-
-                    <div className="text-xs opacity-70 text-center pt-2 border-t border-current/20">
-                      Updated: {new Date(poi.traffic.last_updated).toLocaleTimeString()}
-                    </div>
+                    {poi.traffic && getTrafficIcon(poi.traffic.traffic_level)}
                   </div>
-                ) : (
-                  <div className="text-center py-6 text-slate-500">
-                    <Navigation className="mx-auto mb-2 opacity-50" size={32} />
-                    <p className="text-sm">No traffic data available</p>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         <div className="mt-6 p-6 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl">
