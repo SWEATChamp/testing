@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { GraduationCap, Mail, Phone, Building2, User, Lock, AlertCircle, Key } from 'lucide-react';
 
@@ -6,10 +6,17 @@ interface AuthPageProps {
   onAuthSuccess: () => void;
 }
 
+interface University {
+  id: string;
+  name: string;
+  code: string;
+}
+
 export function AuthPage({ onAuthSuccess }: AuthPageProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [universities, setUniversities] = useState<University[]>([]);
 
   const [loginData, setLoginData] = useState({
     email: '',
@@ -18,11 +25,20 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
 
   const [signupData, setSignupData] = useState({
     name: '',
-    university: '',
+    university_id: '',
     email: '',
     phone: '',
     password: '',
   });
+
+  useEffect(() => {
+    fetchUniversities();
+  }, []);
+
+  const fetchUniversities = async () => {
+    const { data } = await supabase.from('universities').select('*').order('name');
+    if (data) setUniversities(data);
+  };
 
   const handleAdminBypass = async () => {
     setLoading(true);
@@ -52,7 +68,8 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
         await supabase.from('user_profiles').upsert({
           id: newUser!.id,
           name: 'Admin User',
-          university: 'Demo University',
+          university: 'Taylor University',
+          university_id: (await supabase.from('universities').select('id').eq('code', 'TAYLOR').single()).data?.id,
           email: 'admin@campus.demo',
           phone_number: '+60123456789',
         });
@@ -67,7 +84,8 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
           await supabase.from('user_profiles').insert({
             id: user!.id,
             name: 'Admin User',
-            university: 'Demo University',
+            university: 'Taylor University',
+            university_id: (await supabase.from('universities').select('id').eq('code', 'TAYLOR').single()).data?.id,
             email: 'admin@campus.demo',
             phone_number: '+60123456789',
           });
@@ -108,7 +126,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
     setError('');
 
     try {
-      if (!signupData.name || !signupData.university || !signupData.email || !signupData.phone || !signupData.password) {
+      if (!signupData.name || !signupData.university_id || !signupData.email || !signupData.phone || !signupData.password) {
         throw new Error('All fields are required');
       }
 
@@ -120,10 +138,13 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
       if (signUpError) throw signUpError;
 
       if (authData.user) {
+        const selectedUniversity = universities.find(u => u.id === signupData.university_id);
+
         const { error: profileError } = await supabase.from('user_profiles').insert({
           id: authData.user.id,
           name: signupData.name,
-          university: signupData.university,
+          university: selectedUniversity?.name || '',
+          university_id: signupData.university_id,
           email: signupData.email,
           phone_number: signupData.phone,
         });
@@ -246,15 +267,20 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">University</label>
                 <div className="relative">
-                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                  <input
-                    type="text"
-                    value={signupData.university}
-                    onChange={(e) => setSignupData({ ...signupData, university: e.target.value })}
-                    className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="University of Malaysia"
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10 pointer-events-none" size={20} />
+                  <select
+                    value={signupData.university_id}
+                    onChange={(e) => setSignupData({ ...signupData, university_id: e.target.value })}
+                    className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white"
                     required
-                  />
+                  >
+                    <option value="">Select your university</option>
+                    {universities.map((uni) => (
+                      <option key={uni.id} value={uni.id}>
+                        {uni.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
