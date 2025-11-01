@@ -2,13 +2,56 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { UserCircle2, School, ArrowUpDown, Car, ParkingSquare, BookOpen, Utensils, CalendarDays, Phone } from 'lucide-react';
 import { VoiceAssistant } from './VoiceAssistant';
+import { useState, useEffect } from 'react';
+import taylorsLogo from '../assets/unnamed.png';
 
 export function Dashboard() {
   const navigate = useNavigate();
+  const [universityCode, setUniversityCode] = useState<string>('');
+
+  useEffect(() => {
+    fetchUserUniversity();
+  }, []);
+
+  const fetchUserUniversity = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('university_id')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profile?.university_id) {
+      const { data: university } = await supabase
+        .from('universities')
+        .select('code')
+        .eq('id', profile.university_id)
+        .maybeSingle();
+
+      if (university) {
+        setUniversityCode(university.code);
+      }
+    }
+  };
+
+  const isTaylors = universityCode === 'TAYLORS';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <nav className="bg-white shadow-lg border-b border-slate-200">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 relative overflow-hidden">
+      {isTaylors && (
+        <div
+          className="absolute inset-0 opacity-5 pointer-events-none"
+          style={{
+            backgroundImage: `url(${taylorsLogo})`,
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: '50%',
+          }}
+        />
+      )}
+      <nav className="bg-white shadow-lg border-b border-slate-200 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
@@ -30,7 +73,7 @@ export function Dashboard() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         <div className="space-y-8">
           <div>
             <h2 className="text-3xl font-bold text-slate-800 mb-2">Campus Overview</h2>
