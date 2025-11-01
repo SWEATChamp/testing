@@ -9,6 +9,13 @@ interface UserProfile {
   email: string;
   phone_number: string;
   university: string;
+  university_id: string;
+}
+
+interface University {
+  id: string;
+  name: string;
+  code: string;
 }
 
 export function AccountPage() {
@@ -17,16 +24,25 @@ export function AccountPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [universities, setUniversities] = useState<University[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone_number: '',
     university: '',
+    university_id: '',
   });
 
   useEffect(() => {
     fetchProfile();
+    fetchUniversities();
   }, []);
+
+  const fetchUniversities = async () => {
+    const { data } = await supabase.from('universities').select('*').order('name');
+    if (data) setUniversities(data);
+  };
 
   const fetchProfile = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -40,11 +56,13 @@ export function AccountPage() {
 
       if (data) {
         setProfile(data);
+        setIsAdmin(data.email === 'admin@campus.demo');
         setFormData({
           name: data.name,
           email: data.email,
           phone_number: data.phone_number,
           university: data.university,
+          university_id: data.university_id || '',
         });
       }
     }
@@ -55,14 +73,28 @@ export function AccountPage() {
     if (!profile) return;
 
     setSaving(true);
+
+    const updateData: any = {
+      name: formData.name,
+      email: formData.email,
+      phone_number: formData.phone_number,
+    };
+
+    if (isAdmin && formData.university_id) {
+      const selectedUni = universities.find(u => u.id === formData.university_id);
+      updateData.university = selectedUni?.name || formData.university;
+      updateData.university_id = formData.university_id;
+    }
+
     const { error } = await supabase
       .from('user_profiles')
-      .update(formData)
+      .update(updateData)
       .eq('id', profile.id);
 
     if (!error) {
-      setProfile({ ...profile, ...formData });
+      setProfile({ ...profile, ...updateData });
       setEditMode(false);
+      window.location.reload();
     }
     setSaving(false);
   };
@@ -129,6 +161,7 @@ export function AccountPage() {
                           email: profile.email,
                           phone_number: profile.phone_number,
                           university: profile.university,
+                          university_id: profile.university_id || '',
                         });
                       }
                     }}
@@ -218,15 +251,22 @@ export function AccountPage() {
                 <div className="flex items-center space-x-2">
                   <Building2 size={18} />
                   <span>University</span>
+                  {isAdmin && <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Admin Can Change</span>}
                 </div>
               </label>
-              {editMode ? (
-                <input
-                  type="text"
-                  value={formData.university}
-                  onChange={(e) => setFormData({ ...formData, university: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+              {editMode && isAdmin ? (
+                <select
+                  value={formData.university_id}
+                  onChange={(e) => setFormData({ ...formData, university_id: e.target.value })}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="">Select your university</option>
+                  {universities.map((uni) => (
+                    <option key={uni.id} value={uni.id}>
+                      {uni.name}
+                    </option>
+                  ))}
+                </select>
               ) : (
                 <div className="px-4 py-3 bg-slate-50 rounded-lg text-slate-800 font-medium">
                   {profile?.university}
