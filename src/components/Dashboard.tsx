@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { UserCircle2, School, ArrowUpDown, Car, ParkingSquare, BookOpen, Utensils } from 'lucide-react';
+import { UserCircle2, School, ArrowUpDown, Car, ParkingSquare, BookOpen, Utensils, CalendarDays } from 'lucide-react';
 import { VoiceAssistant } from './VoiceAssistant';
 
 export function Dashboard() {
@@ -92,6 +92,18 @@ export function Dashboard() {
                   <Utensils className="text-rose-600" size={48} />
                 </div>
                 <span className="text-xl font-bold text-slate-800">Food Stalls</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => navigate('/unit-arrangement')}
+              className="bg-white rounded-xl shadow-lg p-8 border border-slate-200 hover:shadow-xl hover:scale-105 transition-all group"
+            >
+              <div className="flex flex-col items-center space-y-4">
+                <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-blue-100 rounded-2xl flex items-center justify-center group-hover:from-indigo-200 group-hover:to-blue-200 transition-all">
+                  <CalendarDays className="text-indigo-600" size={48} />
+                </div>
+                <span className="text-xl font-bold text-slate-800">Unit Arrangement</span>
               </div>
             </button>
           </div>

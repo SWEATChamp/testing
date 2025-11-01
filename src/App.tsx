@@ -5,6 +5,7 @@ import { AuthPage } from './components/AuthPage';
 import { Dashboard } from './components/Dashboard';
 import { ClassroomPage } from './pages/ClassroomPage';
 import { AccountPage } from './pages/AccountPage';
+import { UnitArrangementPage } from './pages/UnitArrangementPage';
 
 function App() {
   const [session, setSession] = useState<any>(null);
@@ -43,6 +44,7 @@ function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/classrooms" element={<ClassroomPage />} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path="/unit-arrangement" element={<UnitArrangementPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
